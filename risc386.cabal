@@ -26,7 +26,6 @@ description:
   will lead to an exception.
 
 tested-with:
-  GHC == 7.4.2
   GHC == 7.6.3
   GHC == 7.8.4
   GHC == 7.10.3
@@ -51,8 +50,8 @@ extra-source-files: README.txt
 executable risc386
   hs-source-dirs:   .
   build-depends:    array >= 0.3 && < 0.6,
-                    base >= 4.2 && < 5,
-                    containers >= 0.3 && < 0.6,
+                    base >= 4.6 && < 5,
+                    containers >= 0.3 && < 0.7,
                     -- mtl-2.1 contains a severe bug
                     mtl >= 2.0 && < 2.1 || >= 2.1.1 && < 2.3,
                     pretty >= 1.0 && < 1.2
