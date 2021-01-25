@@ -1,0 +1,9 @@
+*.hi
+*.o
+*~
+risc386
+sim.tar.gz
+dist
+GRM.LOG
+LexIntel.hs
+ParseIntel.hs

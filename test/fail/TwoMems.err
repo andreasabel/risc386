@@ -1,0 +1,3 @@
+main:
+        mov     DWORD PTR [%ebp-4], DWORD PTR [%ebp-4]
+at most one operand can access the memory, the other must be a register or immediate (source only)
