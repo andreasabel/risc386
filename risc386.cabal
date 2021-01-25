@@ -36,7 +36,8 @@ tested-with:
   GHC == 8.8.4
   GHC == 8.10.3
 
-extra-source-files: README.txt
+extra-source-files: CHANGELOG.md
+                    README.txt
                     Makefile
                     test/succeed/Makefile
                     test/succeed/*.s
@@ -46,6 +47,10 @@ extra-source-files: README.txt
                     test/fail/*.err
                     test/fail/*.raw.s
                     test/fail/*.raw.err
+
+source-repository head
+  type:     git
+  location: git://github.com/andreasabel/risc386.git
 
 executable risc386
   hs-source-dirs:   .
