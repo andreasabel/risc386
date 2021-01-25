@@ -18,18 +18,6 @@ isPower2 1 = Just 0
 isPower2 n | Just m <- isEven n = fmap (1+) (isPower2 m)
 isPower2 _ = Nothing
 
--- convert a nothing into a failure
-
-maybeM :: Monad m => String -> Maybe a -> m a
-maybeM s (Nothing) = fail s
-maybeM _ (Just a)  = return a
-
--- monadic head of a list
-
-headM :: Monad m => [a] -> m a
-headM []    = fail "head of empty list"
-headM (a:_) = return a
-
 -- index in an assoc list
 
 lookupIndex :: (Eq a) => a -> [(a,b)] -> Maybe Int
@@ -40,10 +28,10 @@ lookupIndex a ((b,_):l) | a==b = Just 0
 
 -- analyse map in "head, tail"
 
-splitMap :: (Monad m, Ord k, Eq k) => k -> Map k v -> m (v, Map k v)
+splitMap :: (Ord k, Eq k) => k -> Map k v -> Maybe (v, Map k v)
 splitMap k m  = case Map.lookup k m of
-  Just v -> return $ (v, Map.delete k m)
-  Nothing -> fail "splitMap"
+  Just v -> Just (v, Map.delete k m)
+  Nothing -> Nothing
 
 -- monadic composition
 

@@ -8,6 +8,8 @@
 
 module Intel where
 
+import Prelude hiding ((<>))
+
 import Data.Char -- toLower
 import Data.Int
 import Data.List -- elemIndex

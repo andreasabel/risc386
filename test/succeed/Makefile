@@ -2,7 +2,7 @@
 # Author: Andreas Abel
 # Created: 2013-07-16, copied from Agda/test/succeed
 
-risc386=risc386
+risc386=../../risc386
 
 # Getting all assembly files (.s)
 

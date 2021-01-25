@@ -1,5 +1,6 @@
 {-# OPTIONS -cpp #-}
 {-# LANGUAGE UndecidableInstances, TypeSynonymInstances, FlexibleInstances,
+      FlexibleContexts,
       GeneralizedNewtypeDeriving, UndecidableInstances,
       ScopedTypeVariables, MultiParamTypeClasses
   #-}
@@ -153,41 +154,41 @@ max32bit = maxBound
 min32bit :: Int32
 min32bit = minBound
 
-plus :: Monad m => Val -> Val -> m Val
+plus :: (Monad m, MonadError String m) => Val -> Val -> m Val
 plus (I i) (I j) = return $ I $ i + j
 plus (I i) (S a) = return $ S $ a + fromIntegral i
 plus (S a) (I i) = return $ S $ a + fromIntegral i
 plus (I i) (H a) = return $ H $ a { disp = (disp a) + fromIntegral i }
 plus (H a) (I i) = return $ H $ a { disp = (disp a) + fromIntegral i }
-plus x y = fail $ "cannot add " ++ show x ++ " and " ++ show y
+plus x y = throwError $ "cannot add " ++ show x ++ " and " ++ show y
 
-minus :: Monad m => Val -> Val -> m Val
+minus :: (Monad m, MonadError String m) => Val -> Val -> m Val
 minus (I i) (I j) = return $ I $ i - j
 minus (S a) (I i) = return $ S $ a - fromIntegral i
 minus (H a) (I i) = return $ H $ a { disp = (disp a) - fromIntegral i }
-minus x y = fail $ "cannot subtract " ++ show y ++ " from " ++ show x
+minus x y = throwError $ "cannot subtract " ++ show y ++ " from " ++ show x
 
 -- this should be 32bit unsigned multiplication (for address scaling)
 -- but not yet implemented
-times :: Monad m => Val -> Val -> m Val
+times :: (Monad m, MonadError String m) => Val -> Val -> m Val
 times x@(I i) y@(I j) = do
   let r = (toInteger i) * (toInteger j)
   if r <= toInteger max32bit && r >= toInteger min32bit then return $ I $ fromIntegral r
-   else fail $ "overflow in multiplication of " ++ show x ++ " and " ++ show y
+   else throwError $ "overflow in multiplication of " ++ show x ++ " and " ++ show y
   -- return $ Q $ fromIntegral r
-times x y = fail $ "cannot multiply " ++ show x ++ " and " ++ show y
+times x y = throwError $ "cannot multiply " ++ show x ++ " and " ++ show y
 
--- divBy :: Monad m => Val -> Val -> m Val
+-- divBy :: (Monad m, MonadError String m) => Val -> Val -> m Val
 -- divBy (Q i) (I j) | j /= 0 = return $ I $ i `div` j -- (toInteger j)
--- divBy x y = fail $ "cannot divide " ++ show x ++ " by " ++ show y
+-- divBy x y = throwError $ "cannot divide " ++ show x ++ " by " ++ show y
 
-sal :: Monad m => Val -> Val -> m Val
+sal :: (Monad m, MonadError String m) => Val -> Val -> m Val
 sal (I i) (I j) = return $ I $ i `shiftL` (fromIntegral j)
-sal x y = fail $ "cannot shift left " ++ show x ++ " by " ++ show y
+sal x y = throwError $ "cannot shift left " ++ show x ++ " by " ++ show y
 
-sar :: Monad m => Val -> Val -> m Val
+sar :: (Monad m, MonadError String m) => Val -> Val -> m Val
 sar (I i) (I j) = return $ I $ i `shiftR` (fromIntegral j)
-sar x y = fail $ "cannot shift right " ++ show x ++ " by " ++ show y
+sar x y = throwError $ "cannot shift right " ++ show x ++ " by " ++ show y
 
 data LogOp = And | Or | Xor
 
@@ -195,33 +196,33 @@ toInt :: Bool -> Int32
 toInt True = 1
 toInt False = 0
 
-logical :: Monad m => LogOp -> Val -> Val -> m Val
+logical :: (Monad m, MonadError String m) => LogOp -> Val -> Val -> m Val
 logical op (I i) (I j) =
   return (I (exec op i j))
   where exec And = (.&.)
         exec Or  = (.|.)
         exec Xor = (xor)
-logical _ x y = fail $ "cannot perform logical operation on " ++ show x ++ " by " ++ show y
+logical _ x y = throwError $ "cannot perform logical operation on " ++ show x ++ " by " ++ show y
 
-neg :: Monad m => Val -> m Val
+neg :: (Monad m, MonadError String m) => Val -> m Val
 neg (I i) = return $ I $ -i
-neg x = fail $ "cannot negate " ++ show x
+neg x = throwError $ "cannot negate " ++ show x
 
-not :: Monad m => Val -> m Val
+not :: (Monad m, MonadError String m) => Val -> m Val
 not (I i) = return (I (complement i))
-not x = fail $ "cannot logically negate " ++ show x
+not x = throwError $ "cannot logically negate " ++ show x
 
-inc :: Monad m => Val -> m Val
+inc :: (Monad m, MonadError String m) => Val -> m Val
 inc (I i) = return $ I $ i + 1
-inc x = fail $ "cannot increase " ++ show x
+inc x = throwError $ "cannot increase " ++ show x
 
-dec :: Monad m => Val -> m Val
+dec :: (Monad m, MonadError String m) => Val -> m Val
 dec (I i) = return $ I $ i - 1
-dec x = fail $ "cannot decrease " ++ show x
+dec x = throwError $ "cannot decrease " ++ show x
 
-cmp :: Monad m => Val -> Val -> m Ordering
+cmp :: (Monad m, MonadError String m) => Val -> Val -> m Ordering
 cmp (I i) (I j) = return $ compare i j
-cmp x y = fail $ "cannot compare " ++ show x ++ " with " ++ show y
+cmp x y = throwError $ "cannot compare " ++ show x ++ " with " ++ show y
 
 splitQ :: Int64 -> (Int32, Int32)
 splitQ q = ( fromIntegral $ q `shiftR` 32
@@ -232,27 +233,27 @@ joinQ :: (Int32, Int32) -> Int64
 joinQ (h,l) = ((fromIntegral h) `shiftL` 32) .|. (fromIntegral l)
 
 -- convert double word into quadword
-cdq :: Monad m => Val -> m (Val, Val)
+cdq :: (Monad m, MonadError String m) => Val -> m (Val, Val)
 cdq (I i) = return $ fmap2 I $ splitQ (fromIntegral i)
-cdq x = fail $ "cannot convert signed " ++ show x ++ " from 32bit to 64bit"
+cdq x = throwError $ "cannot convert signed " ++ show x ++ " from 32bit to 64bit"
 
-cqd :: Monad m => (Val,Val) -> m Val
+cqd :: (Monad m, MonadError String m) => (Val,Val) -> m Val
 cqd (I h, I l) = let i = joinQ (h, l) in
                  if  i >= fromIntegral min32bit && i <= fromIntegral max32bit then return $ I $ fromIntegral i
-                  else fail $ "value " ++ show i ++ " does not fit into 32 bit"
-cqd x = fail $ "cannot convert signed " ++ show x ++ " from 64bit to 32bit"
+                  else throwError $ "value " ++ show i ++ " does not fit into 32 bit"
+cqd x = throwError $ "cannot convert signed " ++ show x ++ " from 64bit to 32bit"
 
-imul :: Monad m => Val -> Val -> m (Val, Val)
+imul :: (Monad m, MonadError String m) => Val -> Val -> m (Val, Val)
 imul (I i) (I j) = do
   let r :: Int64 = fromIntegral $ (toInteger i) * (toInteger j)
   let (h,l) = splitQ r
   return (I h, I l)
-imul x y = fail $ "cannot multiply " ++ show x ++ " and " ++ show y
+imul x y = throwError $ "cannot multiply " ++ show x ++ " and " ++ show y
 
-idiv :: Monad m => (Val, Val) -> Val -> m Val
+idiv :: (Monad m, MonadError String m) => (Val, Val) -> Val -> m Val
 idiv (I h, I l) (I j) | j /= 0 =
   return $ I $ fromIntegral $ joinQ (h, l) `div` fromIntegral j
-idiv x y = fail $ "cannot divide " ++ show x ++ " by " ++ show y
+idiv x y = throwError $ "cannot divide " ++ show x ++ " by " ++ show y
 
 ----------------------------------------------------------------------
 -- Memory strips
@@ -263,17 +264,17 @@ type Mem = IntMap Val
 
 -- | Checks validity of address indirectly by reporting
 --   read of uninitialized cell.
-memLookup :: (Monad m) => Int -> Mem -> m Val
+memLookup :: (Monad m, MonadError String m) => Int -> Mem -> m Val
 memLookup a m
-  | (a `mod` wordSize) /= 0 = fail "read: address not 32bit aligned"
+  | (a `mod` wordSize) /= 0 = throwError "read: address not 32bit aligned"
   | otherwise =
-      maybe (fail $ "trying to read from invalid memory address " ++ show a)
+      maybe (throwError $ "trying to read from invalid memory address " ++ show a)
         return $ IntMap.lookup a m
 
 -- | Warning: does not check validity of address, should be done before.
-memInsert :: (Monad m) => Int -> Val -> Mem -> m Mem
+memInsert :: (Monad m, MonadError String m) => Int -> Val -> Mem -> m Mem
 memInsert a v m | (a `mod` wordSize) == 0 = return $ IntMap.insert a v m
-                | otherwise = fail "write: address not 32bit aligned"
+                | otherwise = throwError "write: address not 32bit aligned"
 
 ----------------------------------------------------------------------
 -- Heap
@@ -283,7 +284,7 @@ data HeapStrip                            -- size: # bytes
   = Block { size :: Int, strip :: Mem }
     deriving Show
 
-stripLookup :: Monad m => Int -> HeapStrip -> m Val
+stripLookup :: (Monad m, MonadError String m) => Int -> HeapStrip -> m Val
 stripLookup disp (Block _ strip) = memLookup disp strip
 
 stripBlockInit :: Int -> HeapStrip
@@ -299,24 +300,24 @@ data Heap = Heap { hmap :: Map Symbolic HeapStrip , free :: FreeList }
 emptyHeap :: Heap
 emptyHeap = Heap { hmap = Map.empty , free = [ 0 .. ] }
 
-heapLookup :: Monad m => HeapAddr -> Heap -> m Val
+heapLookup :: (Monad m, MonadError String m) => HeapAddr -> Heap -> m Val
 heapLookup a heap = do
     case Map.lookup (base a) (hmap heap) of   -- get heap strip
-      Nothing -> fail $ "heapLookup: not a valid cell id " ++ show (base a)
+      Nothing -> throwError $ "heapLookup: not a valid cell id " ++ show (base a)
       Just h -> do
         let i = (disp a)
         case stripLookup i h of
-          Nothing -> fail $ "heapLookup failed for address " ++ show a ++ " in cell " ++ show h
-          Just v -> return v
+          Left _ -> throwError $ "heapLookup failed for address " ++ show a ++ " in cell " ++ show h
+          Right v -> return v
 
-heapInsert :: Monad m => HeapAddr -> Val -> Heap -> m Heap
+heapInsert :: (Monad m, MonadError String m) => HeapAddr -> Val -> Heap -> m Heap
 heapInsert a v heap = do
-    (h :: HeapStrip) <- maybe (fail $ "when trying to write to memory: invalid address " ++ show a) return $
+    (h :: HeapStrip) <- maybe (throwError $ "when trying to write to memory: invalid address " ++ show a) return $
            Map.lookup (base a) (hmap heap)     -- get heap strip
     let i = disp a
     -- check whether we are in bounds of the heap strip
     when (i < 0 || i >= size h) $
-      fail $ "attempted write of " ++ show v ++ " to invalid heap address " ++ show a
+      throwError $ "attempted write of " ++ show v ++ " to invalid heap address " ++ show a
     m' <- memInsert i v (strip h)     -- modify strip
     let h' = h { strip = m' }         -- insert back into heap
     return $ heap { hmap = Map.insert (base a) h' (hmap heap) }
@@ -330,11 +331,11 @@ heapAllocBlock size = heapAlloc (Block size IntMap.empty)
     heapAlloc o (Heap h (x:xs)) = (HeapAddr x 0, Heap (Map.insert x o h) xs)
     heapAlloc _ (Heap _ []) = error "impossible: heapAlloc: out of heap space"
 
-heapInitBlock :: Monad m => HeapAddr -> Int -> Heap -> m Heap
+heapInitBlock :: (Monad m, MonadError String m) => HeapAddr -> Int -> Heap -> m Heap
 heapInitBlock a size heap = do
   case Map.lookup (base a) (hmap heap) of
-    Nothing -> fail $ "heapInitObj: not a valid cell id " ++ show (base a)
-    Just (Block size' _) | size /= size' -> fail $ "heapInitObj: object at " ++ show (base a) ++ " has size " ++ show size' ++ " but it was requested to initialize " ++ show size ++ " bytes"
+    Nothing -> throwError $ "heapInitObj: not a valid cell id " ++ show (base a)
+    Just (Block size' _) | size /= size' -> throwError $ "heapInitObj: object at " ++ show (base a) ++ " has size " ++ show size' ++ " but it was requested to initialize " ++ show size ++ " bytes"
     Just (Block _ _) -> return $
       heap { hmap = Map.insert (base a) (stripBlockInit size) (hmap heap) }
 
@@ -353,22 +354,22 @@ stackTop = 0
 
 type StackBounds = (Int, Int)  -- top address, current esp
 
-stackLookup :: (Monad m) => StackBounds -> StackAddr -> Mem -> m Val
+stackLookup :: (Monad m, MonadError String m) => StackBounds -> StackAddr -> Mem -> m Val
 stackLookup (top , bot) a m
   | a <= top && a >= bot =
 #if __GLASGOW_HASKELL__ == 606
                 IntMap.lookup a m
 #else
                 case IntMap.lookup a m of
-                   Nothing -> fail $ "failed to lookup stack address (uninitialized stack location?): " ++ show a
+                   Nothing -> throwError $ "failed to lookup stack address (uninitialized stack location?): " ++ show a
                    Just x  -> return x
 #endif
-  | otherwise = fail $ "read from invalid stack address" ++ show a ++ "; valid range is " ++ show bot ++ " to " ++ show top
+  | otherwise = throwError $ "read from invalid stack address" ++ show a ++ "; valid range is " ++ show bot ++ " to " ++ show top
 
-stackInsert :: (Monad m) => StackBounds -> StackAddr -> Val -> Mem -> m Mem
+stackInsert :: (Monad m, MonadError String m) => StackBounds -> StackAddr -> Val -> Mem -> m Mem
 stackInsert  (top , bot) a v m
   | a <= top && a >= bot = return $ IntMap.insert a v m
-  | otherwise = fail $ "write to invalid stack address" ++ show a ++ "; valid range is " ++ show bot ++ " to " ++ show top
+  | otherwise = throwError $ "write to invalid stack address" ++ show a ++ "; valid range is " ++ show bot ++ " to " ++ show top
 
 -- shrinking a stack will cause deletion of stack entries
 stackResize :: StackAddr -> StackAddr -> Mem -> Mem
@@ -420,22 +421,22 @@ updateTemps f rf = rf { temps = f (temps rf) }
 
 -- register operations
 
-regLookup :: (Monad m) => Reg -> RegFile -> m Val
+regLookup :: (Monad m, MonadError String m) => Reg -> RegFile -> m Val
 regLookup (Fixed r) rf =
   case Map.lookup r (regs rf) of
      Just x -> return x
-     Nothing -> fail ("register " ++ show r ++ " is dirty, has possibly undefined value")
+     Nothing -> throwError ("register " ++ show r ++ " is dirty, has possibly undefined value")
 regLookup (Flex t)  rf =
   case Map.lookup t (temps rf) of
      Just x -> return x
-     Nothing -> fail ("unknown temporary '" ++ show t ++ "'")
+     Nothing -> throwError ("unknown temporary '" ++ show t ++ "'")
 
 -- can only write stack addresses to bp, sp
-regInsert :: (Monad m) => Reg -> Val -> RegFile -> m RegFile
+regInsert :: (Monad m, MonadError String m) => Reg -> Val -> RegFile -> m RegFile
 regInsert dest v =
   case dest of
     Fixed (Reg32 n) | isStackReg n, isNothing (isStackAddr v) ->
-      const $ fail "write of non-stack address to stack register"
+      const $ throwError "write of non-stack address to stack register"
     Fixed r -> return . updateRegs  (Map.insert r v)
     Flex  t -> return . updateTemps (Map.insert t v)
   where isStackReg n = n == ebp || n == esp
@@ -482,7 +483,7 @@ initSt = St initRegFile EQ IntMap.empty emptyHeap []
 ----------------------------------------------------------------------
 
 -- all ops can raise exception
-class Monad m => MonadMemSt m where
+class (Monad m, MonadError String m) => MonadMemSt m where
 
   getReg  :: Reg -> m Val
   getReg' :: Reg -> m (Maybe Val)
@@ -504,7 +505,7 @@ class Monad m => MonadMemSt m where
 
 
 -- , MonadError String m
-instance (MonadState St m) => MonadMemSt m where
+instance (Monad m, MonadError String m, MonadState St m) => MonadMemSt m where
 
   -- reading/writing a register
 
@@ -514,7 +515,9 @@ instance (MonadState St m) => MonadMemSt m where
 
   getReg' r = do
     st <- get
-    return (regLookup r (regFile st))
+    case regLookup r (regFile st) of
+      Left  _ -> return Nothing
+      Right v -> return $ Just v
 
   setReg r v = do
     st <- get
@@ -543,12 +546,12 @@ instance (MonadState St m) => MonadMemSt m where
 
   getAddr (S a) = do
     st <- get
-    S sp <- regLookup esp (regFile st)
+    ~(S sp) <- regLookup esp (regFile st)
     v  <- stackLookup (stackTop, sp) a (stack st)
     return v
 
   getAddr a =
-    fail $ "memory lookup failure: " ++ show a ++ " is not an address"
+    throwError $ "memory lookup failure: " ++ show a ++ " is not an address"
 
   -- writing to memory
 
@@ -559,12 +562,12 @@ instance (MonadState St m) => MonadMemSt m where
 
   setAddr (S a) v = do
     st <- get
-    S sp <- regLookup esp (regFile st)
+    ~(S sp) <- regLookup esp (regFile st)
     stack' <-  stackInsert (stackTop, sp) a v (stack st)
     put $ st { stack = stack' }
 
   setAddr a _ =
-    fail $ "memory write failure: " ++ show a ++ " is not an address"
+    throwError $ "memory write failure: " ++ show a ++ " is not an address"
 
   -- getting the nth procedure argument
 
@@ -587,7 +590,7 @@ instance (MonadState St m) => MonadMemSt m where
   restoreRegs = do
     st <- get
     when (null (rfStack st)) $
-      fail "restore failed: register file stack empty"
+      throwError "restore failed: register file stack empty"
     let (tf : tfs) = (rfStack st)
 {-
     bp <- regLookup ebp (regFile st)
@@ -603,15 +606,15 @@ instance (MonadState St m) => MonadMemSt m where
 class Eval m a where
   eval :: a -> m Val
 
-instance Monad m => Eval m Int32 where
+instance (Monad m, MonadError String m) => Eval m Int32 where
   eval i = return $ I i
 
-instance Monad m => Eval m Scale where
+instance (Monad m, MonadError String m) => Eval m Scale where
   eval S2 = return $ I 2
   eval S4 = return $ I 4
   eval S8 = return $ I 8
 
-instance Monad m => Eval m (Maybe Scale) where
+instance (Monad m, MonadError String m) => Eval m (Maybe Scale) where
   eval Nothing = return $ I 1
   eval (Just s) = eval s
 
@@ -691,7 +694,7 @@ instance MonadMemSt m => ControlFree m where
               AND -> logical And
               OR  -> logical Or
               XOR -> logical Xor
-              _   -> fail "internal error: execBin called with wrong first argument"
+              _   -> error "internal error: execBin called with wrong first argument"
     f x y >>= writeDest d
    -- shorter: liftM2 f (eval d) (eval s) >>= writeDest d
 
@@ -702,11 +705,11 @@ instance MonadMemSt m => ControlFree m where
               SHR -> sar -- unsigned shifts not properly supported by Haskell
               SAL -> sal -- no typo!  sal == shl
               SAR -> sar
-              _   -> fail "internal error: execShift called with wrong first argument"
+              _   -> error "internal error: execShift called with wrong first argument"
     f x (I i) >>= writeDest d
 
   execShift _ _ _ =
-    fail "execShift: shift operations (shl, shr, sal, sar) only supported when second operand is an immediate number."
+    throwError "execShift: shift operations (shl, shr, sal, sar) only supported when second operand is an immediate number."
 
   execLea r ea = do
     x <- eval ea
@@ -742,7 +745,7 @@ instance MonadMemSt m => ControlFree m where
               NOT -> not
               INC -> inc
               DEC -> dec
-              _   -> fail "internal error: execUn called with wrong first argument"
+              _   -> error "internal error: execUn called with wrong first argument"
     f v >>= writeDest d
 
   execIMul s = do
@@ -801,7 +804,7 @@ instance MonadMemSt m => ControlFree m where
         (ENTER n)    -> execEnter n
         (LEAVE)      -> execLeave
         (NOP)        -> return ()
-        _            -> fail "internal error: execControlFree called with control instruction"
+        _            -> throwError "internal error: execControlFree called with control instruction"
 
 --  execDS instr d s = do
 
@@ -837,16 +840,16 @@ data FlowChart = FlowChart { frames       :: FrameMap
                            , currentFrame :: Label
                            }
 
-instance (MonadReader FlowChart m) => BlockServer m where
+instance (Monad m, MonadError String m, MonadReader FlowChart m) => BlockServer m where
 
   getFrame l = do
     fs <- asks frames
-    maybe (fail $ "not a valid fragment label: " ++ show l) return $ Map.lookup l fs
+    maybe (throwError $ "not a valid fragment label: " ++ show l) return $ Map.lookup l fs
 
   getBlock l = do
     st <- ask
     let IBlockFrame _ _ blocks = fromJust $ Map.lookup (currentFrame st) (frames st)
-    maybe (fail $ "not a valid local label: " ++ show l) return $ Map.lookup l blocks
+    maybe (throwError $ "not a valid local label: " ++ show l) return $ Map.lookup l blocks
 
   loadFrame l = local (\ st -> st { currentFrame = l })
 
@@ -903,12 +906,12 @@ class Runtime m where
   allocBlock :: Val -> m Val
   initBlock :: Val -> Val -> m ()
 
-instance (MonadWriter Output m, MonadState St m) => Runtime m where
+instance (Monad m, MonadError String m, MonadWriter Output m, MonadState St m) => Runtime m where
 
   -- print = tell . show
   print Char (I i) = tell $ [[chr . fromIntegral . toInteger $ i]]
   print Int  (I i) = tell $ [show i ++ "\n"]
-  print _ x = fail $ "cannot print " ++ show x
+  print _ x = throwError $ "cannot print " ++ show x
 
   allocBlock (I i) = do
     st <- get
@@ -916,14 +919,14 @@ instance (MonadWriter Output m, MonadState St m) => Runtime m where
     put $ st { heap = heap' }
     return $ H addr
 
-  allocBlock x = fail $ "cannot allocate object of size " ++ show x
+  allocBlock x = throwError $ "cannot allocate object of size " ++ show x
 
   initBlock (H addr) (I i) = do
     st <- get
     heap' <- heapInitBlock addr (fromIntegral i) (heap st)
     put $ st { heap = heap' }
 
-  initBlock x y = fail $ "cannot init " ++ show y ++
+  initBlock x y = throwError $ "cannot init " ++ show y ++
                        " bytes of object " ++ show x
 
 
@@ -957,7 +960,7 @@ traceReturn cmd = do
         v <- getReg' eax -- may not return something
         trace (show l ++ " returns " ++ show v) $ cmd
      _    ->
-        fail "trying to execute 'ret' when the stack does not contain a return address"
+        throwError "trying to execute 'ret' when the stack does not contain a return address"
 
 class Simulator m where
   exec :: IBlock -> m ()
@@ -980,7 +983,7 @@ instance (BlockServer m, MonadMemSt m, ControlFree m, Runtime m) => Simulator m 
 
   exec' (CALL "L_raise") _ = do
     v <- getArgBeforeCall 0
-    fail $ "exception " ++ show v ++ " raised"
+    throwError $ "exception " ++ show v ++ " raised"
 
   exec' (CALL "L_println_int") is = doPrint Int is
   exec' (CALL "L_print_char")  is = doPrint Char is
@@ -1004,7 +1007,7 @@ instance (BlockServer m, MonadMemSt m, ControlFree m, Runtime m) => Simulator m 
   -- NOTE: traceReturn ensures that there is a return address on top
   -- of stack
   exec' (RET) _ = traceReturn $ do
-    (R _) <- pop -- pop return address
+    ~(R _) <- pop -- pop return address
     restoreRegs  -- and return (Haskell return)
 
 {-
@@ -1012,7 +1015,7 @@ instance (BlockServer m, MonadMemSt m, ControlFree m, Runtime m) => Simulator m 
     a <- pop -- pop return address
     case a of
       R{} -> return ()
-      _   -> fail $ "RET: expected return address on top of stack, but found " ++ show a
+      _   -> throwError $ "RET: expected return address on top of stack, but found " ++ show a
     restoreRegs  -- and return (Haskell return)
 -}
 
@@ -1033,7 +1036,7 @@ newtype Sim a = Sim { unSim ::
                           (ReaderT FlowChart
                             (ErrorT String
                              (Writer Output)))) a }
-  deriving (Monad, MonadReader FlowChart, MonadState St)
+  deriving (Functor, Applicative, Monad, MonadReader FlowChart, MonadState St)
 
 run :: FrameMap -> Label -> (Either String (), Output)
 run fs l = runWriter $ runErrorT $

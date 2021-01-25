@@ -1,9 +1,11 @@
 *.hi
 *.o
 *~
-risc386
-sim.tar.gz
-dist
-GRM.LOG
+.ghc.environment.*
 LexIntel.hs
 ParseIntel.hs
+risc386
+sim.tar.gz
+/dist/
+/dist-newstyle/
+

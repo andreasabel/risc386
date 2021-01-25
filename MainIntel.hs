@@ -52,7 +52,9 @@ parseCmdLine argv = do
   return prgFile
 
 exitOnError :: Either String b -> IO b
-exitOnError = either crash return where crash a = putStrLn a >> exitFailure
+exitOnError = either crash return
+  where
+  crash a = putStrLn a >> exitFailure
 
 {- main:
   * parse IntelFrame list
@@ -62,7 +64,7 @@ exitOnError = either crash return where crash a = putStrLn a >> exitFailure
   * execute main function
  -}
 main :: IO ()
-main =	do
+main = do
   cmdLine <- getArgs
   prgFile <- parseCmdLine cmdLine
   input   <- readFile prgFile

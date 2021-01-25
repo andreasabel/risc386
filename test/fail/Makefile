@@ -13,7 +13,7 @@
 # an error.  Then one has to verify the new error message is actually the
 # intended one (manually), and remove the .err file.
 
-risc386=risc386
+risc386=../../risc386
 
 # Enable read -n
 SHELL=bash
@@ -28,7 +28,7 @@ allout=$(patsubst %.s,%.err,$(alls))
 
 all : $(allstems)
 
-debug : 
+debug :
 	@echo $(alls)
 
 # No error recorded
