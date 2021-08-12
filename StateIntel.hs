@@ -87,7 +87,7 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 import Control.Monad.State
 
-import Data.Bits
+import Data.Bits (complement, shiftL, shiftR, xor, (.&.), (.|.))
 import Data.Char
 import Data.Int
 import Data.Functor

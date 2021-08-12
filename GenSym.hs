@@ -1,5 +1,6 @@
 {-# LANGUAGE UndecidableInstances, TypeSynonymInstances, FlexibleInstances,
       GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleContexts #-}  -- required by GHC 9.2.1 RC1, even though also in .cabal
 
 module GenSym where
 
@@ -44,7 +45,7 @@ data St = St { nextFreeTemp  :: Temp          -- next free temp
 initSt :: St
 initSt = St (Temp 1000) (TempLabel 0)
 
--- class (Enum a, MonadState a m) => MonadGenSym m 
+-- class (Enum a, MonadState a m) => MonadGenSym m
 -- (too much abstraction:)
 
 class MonadSt m where

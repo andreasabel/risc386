@@ -1,5 +1,5 @@
 name:           risc386
-version:        0.0.20210125
+version:        0.0.20210812
 build-type:     Simple
 cabal-version:  >= 1.10
 license:        BSD3
@@ -7,7 +7,7 @@ license-file:   LICENSE
 author:         Andreas Abel with contributions by Robert Grabowski and Ulrich Schoepp
 maintainer:     Andreas Abel <andreas.abel@ifi.lmu.de>
 category:       Compilers/Interpreters, Education
-homepage:       http://www2.tcs.ifi.lmu.de/~abel/
+homepage:       https://github.com/andreasabel/risc386
 synopsis:       Reduced instruction set i386 simulator
 description:
   risc386 is a symbolic Intel(R) 386 assembler interpreter which

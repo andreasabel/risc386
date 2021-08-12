@@ -1,6 +1,12 @@
 Changelog for risc386
 =====================
 
+Version 0.0.20210812
+--------------------
+
+* Fixes for GHC 9.2.1 RC1 and `Data.Bits`
+* Builds with GHC 7.6 - 9.0.1 and 9.2.1 RC1
+
 Version 0.0.20210115
 --------------------
 
