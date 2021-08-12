@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances, TypeSynonymInstances, FlexibleInstances,
       GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleContexts #-}  -- required by GHC 9.2.1 RC1, even though also in .cabal
+{-# LANGUAGE FlexibleContexts #-}  -- required by GHC 9.2.1 RC1
 
 module GenSym where
 
