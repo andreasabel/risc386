@@ -1,5 +1,5 @@
 name:           risc386
-version:        0.0.20210812
+version:        0.0.20220128
 build-type:     Simple
 cabal-version:  >= 1.10
 license:        BSD3
@@ -35,7 +35,7 @@ tested-with:
   GHC == 8.6.5
   GHC == 8.8.4
   GHC == 8.10.7
-  GHC == 9.0.1
+  GHC == 9.0.2
   GHC == 9.2.1
 
 extra-source-files: CHANGELOG.md
@@ -59,8 +59,8 @@ executable risc386
   build-depends:    array >= 0.3 && < 0.6,
                     base >= 4.6 && < 5,
                     containers >= 0.3 && < 0.7,
-                    -- mtl-2.1 contains a severe bug
-                    mtl >= 2.0 && < 2.1 || >= 2.1.1 && < 2.3,
+                    -- ExceptT was added in mtl-2.2
+                    mtl >= 2.2 && < 2.4,
                     pretty >= 1.0 && < 1.2
   build-tools:      happy >= 1.15 && < 2,
                     alex >= 2.0 && < 4

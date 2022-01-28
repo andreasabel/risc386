@@ -82,7 +82,7 @@ import Prelude hiding (not,print)
 import qualified Prelude as Prelude
 
 import Control.Applicative (Applicative)
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.Writer
 import Control.Monad.State
@@ -1035,10 +1035,10 @@ instance (BlockServer m, MonadMemSt m, ControlFree m, Runtime m) => Simulator m 
 newtype Sim a = Sim { unSim ::
                          (StateT St
                           (ReaderT FlowChart
-                            (ErrorT String
+                            (ExceptT String
                              (Writer Output)))) a }
   deriving (Functor, Applicative, Monad, MonadReader FlowChart, MonadState St)
 
 run :: FrameMap -> Label -> (Either String (), Output)
-run fs l = runWriter $ runErrorT $
+run fs l = runWriter $ runExceptT $
   exec [CALL l] `evalStateT` initSt `runReaderT` (FlowChart fs l)

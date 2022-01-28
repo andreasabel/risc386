@@ -1,6 +1,12 @@
 Changelog for risc386
 =====================
 
+Version 0.0.20220128
+--------------------
+
+* Build with `mtl-2.3` (switch from `ErrorT` to `ExceptT`)
+* Builds with GHC 7.6 - 9.2.1
+
 Version 0.0.20210812
 --------------------
 
