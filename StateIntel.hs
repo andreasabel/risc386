@@ -82,6 +82,7 @@ import Prelude hiding (not,print)
 import qualified Prelude as Prelude
 
 import Control.Applicative (Applicative)
+import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.Writer

@@ -1,0 +1,15 @@
+packages: .
+
+source-repository-package
+  type: git
+  location: https://github.com/haskell/mtl.git
+  tag: v2.3-rc4
+--  tag: v2.3-rc3
+
+constraints:
+  , mtl == 2.3.*
+  , transfomers == 0.6.*
+
+allow-newer:
+  , *:mtl
+  , *:transformers
