@@ -1,5 +1,5 @@
 {
-module ParseIntel  where
+module ParseIntel (parse) where
 
 import Data.Int
 

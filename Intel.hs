@@ -120,13 +120,13 @@ type BiLinEA = (Reg, Maybe Scale, Maybe Reg)
 type AffineEA = (Maybe Reg, Maybe Scale, Int32)
 type LinEA = (Reg, Maybe Scale)
 
-data Dest = Reg Reg     -- a register
-
-            -- full effective address
-          | Mem Reg                    -- index
-                (Maybe Scale)          -- * scale
-                (Maybe Reg)            -- + base
-                Int32                  -- + Displacement (8, 16, or) 32 bit
+data Dest = Reg Reg     -- ^ a register
+          |
+            -- | full effective address
+            Mem Reg                    -- @index@
+                (Maybe Scale)          -- @* scale@
+                (Maybe Reg)            -- @+ base@
+                Int32                  -- @+ Displacement (8, 16, or) 32 bit@
             deriving (Eq)
 
 instance Temporary Dest where

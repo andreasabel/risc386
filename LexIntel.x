@@ -1,5 +1,5 @@
 {
-module LexIntel where
+module LexIntel (AlexPosn(..), alexScanTokens) where
 
 import Intel (Reg32(..),Register(..))
 import TokenIntel as Token
