@@ -3,7 +3,7 @@ module TokenIntel where
 import Prelude
   ( Int, String
   , Eq(..), Read(..), Show(..)
-  , tail, dropWhile, ($),
+  , drop, dropWhile, ($)
   )
 
 import Intel (Reg32(..))
@@ -74,7 +74,7 @@ data Token a =
 
 filterPn :: String -> String
 filterPn [] = []
-filterPn (' ':'(':'P':'n': s) = filterPn (tail $ dropWhile (/= ')') s)
+filterPn (' ':'(':'P':'n': s) = filterPn (drop 1 $ dropWhile (/= ')') s)
 filterPn (c:cs) = c:filterPn cs
 
 token_pos :: Token t -> t
@@ -132,4 +132,3 @@ token_pos (Label _ p) = p
 token_pos (Temp _ p) = p
 token_pos (Reg _ p) = p
 token_pos (Id _ p) = p
-

@@ -42,14 +42,14 @@ usage = do
 parseCmdLine :: [String] -> IO String
 parseCmdLine argv = do
   let (os, ns, _) = getOpt Permute optDescrs argv
-  unless (length ns == 1)
-    usage
-  let prgFile = head ns
-  when (Verbose `elem` os) $
-    hPutStrLn stderr $ "Reading program from file: " ++ prgFile
-  when (Help `elem` os) $
-    ioError (userError "No execution with --help")
-  return prgFile
+  case ns of
+    [prgFile] -> do
+      when (Verbose `elem` os) $
+        hPutStrLn stderr $ "Reading program from file: " ++ prgFile
+      when (Help `elem` os) $
+        ioError (userError "No execution with --help")
+      return prgFile
+    _ -> usage
 
 exitOnError :: Either String b -> IO b
 exitOnError = either crash return

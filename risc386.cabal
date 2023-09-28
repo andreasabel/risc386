@@ -1,6 +1,6 @@
 cabal-version:  >= 1.10
 name:           risc386
-version:        0.0.20220128
+version:        0.0.20230928
 build-type:     Simple
 license:        BSD3
 license-file:   LICENSE
