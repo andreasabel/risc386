@@ -1,1 +1,2 @@
-installed: +all -transformers
+branches: master
+installed: +all
